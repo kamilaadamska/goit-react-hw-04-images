@@ -1,0 +1,23 @@
+.containerBtn {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 2.5rem;
+}
+
+.loadMore {
+  padding: 8px;
+  border-radius: 3px;
+  border: 1px solid black;
+  font-size: 14px;
+  min-width: 10%;
+  cursor: pointer;
+  background-color: rgba(0, 0, 139, 0.6);
+  border-color: rgba(0, 0, 139, 0.6);
+  color: white;
+}
+
+.loadMore:hover {
+  background-color: #00008b;
+  box-shadow: 0px 0px 22px -4px rgba(0, 0, 139, 1);
+  border-color: #00008b;
+}
