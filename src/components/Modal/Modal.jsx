@@ -1,19 +1,24 @@
 import css from './modal.module.css';
 import PropTypes from 'prop-types';
+import { useModalContext } from 'hooks/modalContext';
 
-export const Modal = ({ imgUrl, tagsForAlt, hideModal, onKeyDown }) => {
+export const Modal = ({ imgDetails, onKeyDown }) => {
+  const { toggleModal } = useModalContext();
+  const { imgUrl, tags } = imgDetails;
+
   return (
-    <div className={css.overlay} onClick={hideModal}>
+    <div className={css.overlay} onClick={toggleModal}>
       <div className={css.modal} tabIndex={1} onKeyDown={onKeyDown} id="modal">
-        <img src={imgUrl} alt={tagsForAlt} className={css.modalImg} />
+        <img src={imgUrl} alt={tags} className={css.modalImg} />
       </div>
     </div>
   );
 };
 
 Modal.propTypes = {
-  imgUrl: PropTypes.string,
-  tagsForAlt: PropTypes.string,
-  hideModal: PropTypes.func,
+  imgDetails: PropTypes.shape({
+    imgUrl: PropTypes.string,
+    tags: PropTypes.string,
+  }),
   onKeyDown: PropTypes.func,
 };

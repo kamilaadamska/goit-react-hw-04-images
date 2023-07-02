@@ -1,7 +1,10 @@
 import css from './imagegalleryitem.module.css';
 import PropTypes from 'prop-types';
+import { useModalContext } from 'hooks/modalContext';
 
-export const ImageGalleryItem = ({ images, onClick }) => {
+export const ImageGalleryItem = ({ images }) => {
+  const { toggleModal } = useModalContext();
+
   return (
     <>
       {images.map(({ id, webformatURL, tags, largeImageURL }) => (
@@ -10,7 +13,7 @@ export const ImageGalleryItem = ({ images, onClick }) => {
             src={webformatURL}
             alt={tags}
             className={css.photo}
-            onClick={onClick}
+            onClick={toggleModal}
             data-imageurl={largeImageURL}
           />
         </li>
@@ -21,5 +24,4 @@ export const ImageGalleryItem = ({ images, onClick }) => {
 
 ImageGalleryItem.propTypes = {
   images: PropTypes.arrayOf(PropTypes.object),
-  onClick: PropTypes.func,
 };

@@ -2,78 +2,67 @@ import { Searchbar } from './Searchbar';
 import { ImageGallery } from './ImageGallery';
 import { Button } from './Button';
 import { Loader } from './Loader';
-import { Component } from 'react';
 import { fetchImages, PER_PAGE } from 'services/api';
 import { Error } from './Error';
 import { Modal } from './Modal';
+import { useState, useEffect } from 'react';
+import { ModalContext } from 'hooks/modalContext';
 
-class App extends Component {
-  state = {
-    images: [],
-    isLoading: false,
-    error: '',
-    currentPage: 1,
-    searchedPhrase: '',
-    totalPages: 0,
-    show: false,
-    imgUrl: '',
-    tags: '',
-  };
+export const App = () => {
+  const [images, setImages] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchedPhrase, setSearchedPhrase] = useState('');
+  const [totalPages, setTotalPages] = useState(0);
+  const [show, setShow] = useState(false);
+  const [modalDetails, setModalDetails] = useState({});
 
-  getSearchedPhrase = e => {
+  const getSearchedPhrase = e => {
     e.preventDefault();
     const searchForm = e.target;
     const searchedWord = searchForm.elements.searchQuery.value;
-    if (searchedWord !== this.state.searchedPhrase) {
-      this.setState({
-        searchedPhrase: searchedWord,
-        currentPage: 1,
-        images: [],
-      });
+    if (searchedWord !== searchedPhrase) {
+      setSearchedPhrase(searchedWord);
+      setCurrentPage(1);
+      setImages([]);
     }
   };
 
-  getImages = async () => {
-    const { searchedPhrase, currentPage } = this.state;
+  const loadMore = () => {
+    setCurrentPage(prevState => prevState + 1);
+  };
 
-    try {
-      this.setState({ isLoading: true, error: '', totalPages: 0 });
-      const newData = await fetchImages(searchedPhrase, currentPage);
-      const newImages = newData.hits;
-      if (newImages) {
-        this.setState(prevState => ({
-          images: [...prevState.images, ...newImages],
-          isLoading: false,
-          totalPages: Math.ceil(newData.totalHits / PER_PAGE),
-        }));
-      } else {
-        throw new Error();
+  useEffect(() => {
+    const getImages = async () => {
+      try {
+        setIsLoading(true);
+        setError('');
+        setTotalPages(0);
+
+        const newData = await fetchImages(searchedPhrase, currentPage);
+        const newImages = newData.hits;
+        if (newData !== 'empty') {
+          setImages(prevImages => [...prevImages, ...newImages]);
+          setIsLoading(false);
+          setTotalPages(Math.ceil(newData.totalHits / PER_PAGE));
+        } else if (newData === 'empty') {
+          setIsLoading(false);
+          setImages([]);
+        } else {
+          throw new Error();
+        }
+      } catch (error) {
+        setIsLoading(false);
+        setError(error);
+        setTotalPages(0);
       }
-    } catch (error) {
-      this.setState({
-        error,
-        isLoading: false,
-        totalPages: 0,
-      });
-    }
-  };
+    };
 
-  loadMore = () => {
-    this.setState(prevState => ({
-      currentPage: prevState.currentPage + 1,
-    }));
-  };
+    getImages();
+  }, [searchedPhrase, currentPage]);
 
-  componentDidUpdate(prevProps, prevState) {
-    const { searchedPhrase, currentPage, show } = this.state;
-
-    if (
-      searchedPhrase !== prevState.searchedPhrase ||
-      currentPage !== prevState.currentPage
-    ) {
-      this.getImages();
-    }
-
+  useEffect(() => {
     if (show) {
       const modal = document.getElementById('modal');
       modal.focus();
@@ -81,60 +70,36 @@ class App extends Component {
     } else {
       document.body.style.overflow = 'auto';
     }
-  }
+  }, [show]);
 
-  toggleModal = e => {
+  const toggleModal = e => {
     if (e.currentTarget !== e.target) {
       return;
     }
     const url = e.target.dataset.imageurl;
     const tagsForalt = e.target.alt;
-    this.setState(prevState => ({
-      show: !prevState.show,
-      imgUrl: url,
-      tags: tagsForalt,
-    }));
+
+    setShow(prevShow => !prevShow);
+    setModalDetails({ imgUrl: url, tags: tagsForalt });
   };
 
-  onKeyDown = e => {
+  const onKeyDown = e => {
     e.preventDefault();
     if (e.key === 'Escape') {
-      this.setState(prevState => ({
-        show: !prevState.show,
-      }));
+      setShow(prevShow => !prevShow);
     }
   };
 
-  render() {
-    const {
-      images,
-      isLoading,
-      error,
-      currentPage,
-      totalPages,
-      show,
-      imgUrl,
-      tags,
-    } = this.state;
-
-    return (
-      <>
-        <Searchbar findImages={this.getSearchedPhrase} />
-        <ImageGallery images={images} onClick={this.toggleModal} />
-        {show && (
-          <Modal
-            imgUrl={imgUrl}
-            tagsForAlt={tags}
-            hideModal={this.toggleModal}
-            onKeyDown={this.onKeyDown}
-          />
-        )}
-        {isLoading && <Loader />}
-        {error && <Error />}
-        {currentPage < totalPages && <Button onClick={this.loadMore} />}
-      </>
-    );
-  }
-}
-
-export default App;
+  return (
+    <>
+      <Searchbar findImages={getSearchedPhrase} />
+      <ModalContext.Provider value={{ toggleModal }}>
+        <ImageGallery images={images} />
+        {show && <Modal imgDetails={modalDetails} onKeyDown={onKeyDown} />}
+      </ModalContext.Provider>
+      {isLoading && <Loader />}
+      {error && <Error />}
+      {currentPage < totalPages && <Button onClick={loadMore} />}
+    </>
+  );
+};

@@ -1,5 +1,6 @@
 import css from './searchbar.module.css';
 import searchIcon from '../../images/search.svg';
+import PropTypes from 'prop-types';
 
 export const Searchbar = ({ findImages }) => {
   return (
@@ -19,4 +20,8 @@ export const Searchbar = ({ findImages }) => {
       </form>
     </header>
   );
+};
+
+Searchbar.propTypes = {
+  findImages: PropTypes.func,
 };

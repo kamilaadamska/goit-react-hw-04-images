@@ -2,13 +2,11 @@ import css from './imagegallery.module.css';
 import { ImageGalleryItem } from 'components/ImageGalleryItem';
 import PropTypes from 'prop-types';
 
-export const ImageGallery = ({ images, onClick }) => {
+export const ImageGallery = ({ images }) => {
   return (
     <div className={css.container}>
       <ul className={css.gallery}>
-        {images.length !== 0 && (
-          <ImageGalleryItem images={images} onClick={onClick} />
-        )}
+        {images.length !== 0 && <ImageGalleryItem images={images} />}
       </ul>
     </div>
   );
@@ -16,5 +14,4 @@ export const ImageGallery = ({ images, onClick }) => {
 
 ImageGallery.propTypes = {
   images: PropTypes.arrayOf(PropTypes.object),
-  onClick: PropTypes.func,
 };

@@ -17,7 +17,7 @@ export const fetchImages = async (searchedPhrase, pageNo) => {
       },
     });
     if (response.data.hits.length === 0) throw new Error();
-    if (searchedPhrase === '') throw new Error();
+    if (searchedPhrase === '') return 'empty';
     return response.data;
   } catch (error) {
     console.log(error);
